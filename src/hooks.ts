@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Event, EventsPayloadByEvent, Progress, State } from './interfaces';
 import TrackPlayer from './trackPlayer';
 
-const usePlaybackStateWithoutInitialValue = () => {
-  const [state, setState] = useState<State | undefined>(undefined);
+/** Get current playback state and subsequent updates  */
+export const usePlaybackState = () => {
+  const [state, setState] = useState(State.None);
   useEffect(() => {
     let mounted = true;
 
@@ -32,12 +33,6 @@ const usePlaybackStateWithoutInitialValue = () => {
   }, []);
 
   return state;
-};
-
-/** Get current playback state and subsequent updates  */
-export const usePlaybackState = () => {
-  const state = usePlaybackStateWithoutInitialValue();
-  return state ?? State.None;
 };
 
 /**
@@ -93,11 +88,11 @@ export function useProgress(updateInterval = 1000) {
     duration: 0,
     buffered: 0,
   });
-  const playerState = usePlaybackStateWithoutInitialValue();
-  const isNone = playerState === State.None;
+  const playerState = usePlaybackState();
+
   useEffect(() => {
     let mounted = true;
-    if (isNone) {
+    if (playerState === State.None) {
       setState({ position: 0, duration: 0, buffered: 0 });
       return;
     }
@@ -136,7 +131,7 @@ export function useProgress(updateInterval = 1000) {
     return () => {
       mounted = false;
     };
-  }, [isNone, updateInterval]);
+  }, [playerState, updateInterval]);
 
   return state;
 }
